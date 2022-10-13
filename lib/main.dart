@@ -160,7 +160,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
                 onSubmitted: (text) => onCalculatePrime(),
               ),
-              !isCalculating?TextButton(onPressed: () => onCalculatePrime(), child: const Text('Calculate')):const SizedBox(height: 0)
+              const SizedBox(height: 10),
+              !isCalculating?MaterialButton(
+                color: Colors.blue,
+                  textColor: Colors.white,
+                  onPressed: () => onCalculatePrime(),
+                  child: const Text('Calculate')
+              ):const SizedBox(height: 0)
             ],
           ),
         ),
