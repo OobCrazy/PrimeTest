@@ -31,3 +31,4 @@ google-services.json
 .packages
 *.lock
 .dart_tool
+*.DS_Store
