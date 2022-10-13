@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -51,37 +52,63 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   TextEditingController textEditingController = TextEditingController();
   String result = 'Please input number.';
+  bool isCalculating = false;
 
-  onCalculatePrime() async {
+  onCalculatePrime() {
+    if(isCalculating){
+      return;
+    }
     setState(() {
+      isCalculating = true;
       result = 'Calculating...';
     });
-    try{
-      double number = double.parse(textEditingController.text);
-      if(await isPrime(number)){
-        result = 'The closest prime is $number';
-      } else {
-        result = await checkClosestPrime(number-1, number+1);
+    Future.delayed(const Duration(milliseconds: 500), (){
+      try{
+        double number = double.parse(textEditingController.text);
+        isPrime(number).then((value){
+          if(value){
+            setState(() {
+              isCalculating = false;
+              result = 'The closest prime is ${getNumber(number)}';
+            });
+          } else {
+            checkClosestPrime(number-1, number+1);
+          }
+        });
+      }catch(e){
+        setState(() {
+          isCalculating = false;
+          result = e.toString();
+        });
       }
-    }catch(e){
-      result = e.toString();
-    }
-    setState(() {});
+    });
   }
 
-  Future<String> checkClosestPrime(double lowerNumber, double upperNumber) async {
+  checkClosestPrime(double lowerNumber, double upperNumber) async {
     bool isLowerPrime = await isPrime(lowerNumber);
     bool isUpperPrime = await isPrime(upperNumber);
     if(isLowerPrime && isUpperPrime){
-      return 'The closest prime is $lowerNumber and $upperNumber';
+      setState(() {
+        isCalculating = false;
+        result = 'The closest prime is ${getNumber(lowerNumber)} and ${getNumber(upperNumber)}';
+      });
+      return;
     }
     if(isLowerPrime){
-      return 'The closest prime is $lowerNumber';
+      setState(() {
+        isCalculating = false;
+        result = 'The closest prime is ${getNumber(lowerNumber)}';
+      });
+      return;
     }
     if(isUpperPrime){
-      return 'The closest prime is $upperNumber';
+      setState(() {
+        isCalculating = false;
+        result = 'The closest prime is ${getNumber(upperNumber)}';
+      });
+      return;
     }
-    return await checkClosestPrime(lowerNumber-1, upperNumber+1);
+    checkClosestPrime(lowerNumber-1, upperNumber+1);
   }
 
   Future<bool> isPrime(double number) async {
@@ -100,6 +127,14 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
     return true;
+  }
+
+  String getNumber(double number){
+    try{
+      return NumberFormat.currency(symbol: '', decimalDigits: 0).format(number);
+    }catch(e){
+      return '0';
+    }
   }
 
   @override
@@ -123,8 +158,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly
                 ],
+                onSubmitted: (text) => onCalculatePrime(),
               ),
-              TextButton(onPressed: () => onCalculatePrime(), child: const Text('Calculate'))
+              !isCalculating?TextButton(onPressed: () => onCalculatePrime(), child: const Text('Calculate')):const SizedBox(height: 0)
             ],
           ),
         ),

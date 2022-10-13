@@ -30,3 +30,4 @@ google-services.json
 *.hprof
 .packages
 *.lock
+.dart_tool
